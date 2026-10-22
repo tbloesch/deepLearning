@@ -3,6 +3,7 @@ data/
 data.zip
 
 # Model checkpoints
+checkpoints/
 *.pt
 *.pth
 

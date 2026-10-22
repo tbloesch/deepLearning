@@ -12,7 +12,7 @@ deepLearning/
 │   ├── utils.py          # small helpers (denormalise, list_images, ...)
 │   └── checks.py         # data sanity checks (samples, balance, duplicates, ...)
 ├── notebooks/            # thin notebooks that import from src/ and run things
-│   └── 01_data_checks.ipynb
+│   └── final_project.ipynb
 ├── data/                 # downloaded at runtime, not in git
 └── pyproject.toml
 ```
@@ -22,7 +22,7 @@ deepLearning/
 1. Edit code in `src/dlproject/` in VS Code.
 2. `git commit` and `git push`.
 3. In Colab, open the notebook (badge in the notebook, or
-   `colab.research.google.com/github/tbloesch/deepLearning/blob/main/notebooks/01_data_checks.ipynb`)
+   `colab.research.google.com/github/tbloesch/deepLearning/blob/main/notebooks/final_project.ipynb`)
    and run the setup cell. It clones/pulls the repo, so you always run the latest code.
 
 ## Local setup (optional)
