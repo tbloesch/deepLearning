@@ -17,13 +17,13 @@ deepLearning/
 └── pyproject.toml
 ```
 
-## Workflow
+## My workflow
+Create the model in models.py
+Create the train.py based on our code from Lab4, specifically the evaluate function and training loop that starts right after
 
-1. Edit code in `src/dlproject/` in VS Code.
-2. `git commit` and `git push`.
-3. In Colab, open the notebook (badge in the notebook, or
-   `colab.research.google.com/github/tbloesch/deepLearning/blob/main/notebooks/final_project.ipynb`)
-   and run the setup cell. It clones/pulls the repo, so you always run the latest code.
+Received the first graphs of training val and train val. Starts overfitting after epoch 8 ish. 
+
+
 
 ## Local setup (optional)
 
