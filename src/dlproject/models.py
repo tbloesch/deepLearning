@@ -1,7 +1,7 @@
 import torch.nn as nn
 from torchvision.models import resnet18, ResNet18_Weights
 
-
+# Builds a ResNet18 model with an option to freeze the backbone and customize the number of output classes
 def build_model(num_classes, freeze_backbone=True):
     model = resnet18(weights=ResNet18_Weights.DEFAULT)
 
