@@ -59,5 +59,5 @@ def train(model, train_loader, val_loader, device, epochs=10, lr=1e-3, checkpoin
                 print(f"Saved checkpoint to {checkpoint_path} at epoch {best_epoch}")
 
     print(f"Best validation loss: {best_val_loss:.4f} at epoch {best_epoch}")
-    history["Best epoch"] = best_epoch
+    history["best_epoch"] = best_epoch
     return history
