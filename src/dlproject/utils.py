@@ -1,7 +1,8 @@
-"""Small helpers shared across modules."""
 from pathlib import Path
 
 import torch
+import random
+import numpy as np
 
 from .config import IMAGENET_MEAN, IMAGENET_STD
 
@@ -23,3 +24,11 @@ def dataset_labels(dataset):
     if hasattr(dataset, 'targets'):
         return list(dataset.targets)
     return [dataset[i][1] for i in range(len(dataset))]
+
+
+def set_seed(seed):
+    """Set the random seed for reproducibility."""
+    torch.manual_seed(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.cuda.manual_seed_all(seed)
