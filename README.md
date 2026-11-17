@@ -20,6 +20,14 @@ deepLearning/
 ## My workflow
 Create the model in models.py
 Create the train.py based on our code from Lab4, specifically the evaluate function and training loop that starts right after
+Because we have a small dataset, we only unfreeze 1 layer
+
+After first run - we look at val loss because it gives more information than val accuracy. Can see at epoch 9 the loss is at it's lowest.
+
+Implement saving the model while we train, so I can get the right weights
+
+Experiment 1: Try to do cyclic learning rate
+Experiment 2: Data augmentation
 
 Received the first graphs of training val and train val. Starts overfitting after epoch 8 ish. 
 

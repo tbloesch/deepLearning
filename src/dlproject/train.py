@@ -16,10 +16,12 @@ def evaluate(model, loader, loss_fn, device):
             total += images.size(0)
     return total_loss / total, correct / total
 
-def train(model, train_loader, val_loader, device, epochs=10, lr=1e-3):
+def train(model, train_loader, val_loader, device, epochs=10, lr=1e-3, checkpoint_path=None):
     optimizer = optim.Adam(model.parameters(), lr=lr)
     loss_fn = nn.CrossEntropyLoss()
     history = {"train_loss": [], "train_acc": [], "val_loss": [], "val_acc": []}
+    best_val_loss = float('inf')
+    best_epoch = 0
 
     for epoch in range(epochs):
         model.train()
@@ -48,5 +50,13 @@ def train(model, train_loader, val_loader, device, epochs=10, lr=1e-3):
 
         print(f"Epoch {epoch+1}/{epochs} - train_loss: {train_loss:.4f}, train_acc: {train_acc:.4f} "
               f"- val_loss: {val_loss:.4f}, val_acc: {val_acc:.4f}")
+        
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
+            best_epoch = epoch + 1
+            if checkpoint_path is not None:
+                torch.save(model.state_dict(), checkpoint_path)
+                print(f"Saved checkpoint to {checkpoint_path} at epoch {best_epoch}")
 
+    print(f"Best validation loss: {best_val_loss:.4f} at epoch {best_epoch}")
     return history
