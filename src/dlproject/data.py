@@ -26,20 +26,23 @@ def download_data(data_dir=DATA_DIR, file_id=DATA_FILE_ID):
     return data_dir
 
 
-def get_transform(augment=False):
-    if augment:
-        return transforms.Compose([
-            transforms.RandomResizedCrop(IMAGE_SIZE, scale=(0.7, 1.0)),
-            #transforms.RandomHorizontalFlip(),
-            #transforms.ColorJitter(brightness=0.2, contrast=0.2),
-            transforms.ToTensor(),
-            transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD),
-        ])
-    return transforms.Compose([
-        transforms.Resize(IMAGE_SIZE),
-        transforms.ToTensor(),
-        transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD),
-    ])
+def get_transform(flip=False, crop=False, jitter=False):
+    """Return a composed transform with optional random crop, flip, and color jitter."""
+    steps = []
+    
+    if crop:
+        steps.append(transforms.RandomResizedCrop(IMAGE_SIZE, scale=(0.7, 1.0)))
+    else:
+        steps.append(transforms.Resize(IMAGE_SIZE))
+
+    if flip:
+        steps.append(transforms.RandomHorizontalFlip())
+    if jitter:
+        steps.append(transforms.ColorJitter(brightness=0.2, contrast=0.2))
+
+    steps.append(transforms.ToTensor())
+    steps.append(transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD))
+    return transforms.Compose(steps)
 
 
 def get_datasets(data_dir=DATA_DIR, train_transform=None, val_transform=None):
@@ -49,7 +52,6 @@ def get_datasets(data_dir=DATA_DIR, train_transform=None, val_transform=None):
     val_transform = val_transform or get_transform()
     train_dataset = datasets.ImageFolder(data_dir / 'train', transform=train_transform)
     val_dataset   = datasets.ImageFolder(data_dir / 'val',   transform=val_transform)
-    return train_dataset, val_dataset
     return train_dataset, val_dataset
 
 

@@ -47,17 +47,19 @@ def train(model, train_loader, val_loader, device, epochs=10, lr=1e-3, checkpoin
         history["train_acc"].append(train_acc)
         history["val_loss"].append(val_loss)
         history["val_acc"].append(val_acc)
-
-        print(f"Epoch {epoch+1}/{epochs} - train_loss: {train_loss:.4f}, train_acc: {train_acc:.4f} "
-              f"- val_loss: {val_loss:.4f}, val_acc: {val_acc:.4f}")
         
+        marker = ""
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             best_epoch = epoch + 1
+            marker = " *"
             if checkpoint_path is not None:
                 torch.save(model.state_dict(), checkpoint_path)
-                print(f"Saved checkpoint to {checkpoint_path} at epoch {best_epoch}")
 
-    print(f"Best validation loss: {best_val_loss:.4f} at epoch {best_epoch}")
+        print(f"Epoch {epoch+1:2d}/{epochs} | "
+              f"train loss {train_loss:.4f}  acc {train_acc:.3f} | "
+              f"val loss {val_loss:.4f}  acc {val_acc:.3f}{marker}")
+
+    print(f"Best: epoch {best_epoch}, val loss {best_val_loss:.4f}  (* = checkpoint saved)")
     history["best_epoch"] = best_epoch
     return history
