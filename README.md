@@ -29,9 +29,11 @@ Implement saving the model while we train, so I can get the right weights.
 Gives 4 percentage difference than first run -> Try to implement seed instead
 It's because I have shuffle=true in my data.py and nn.linear is also random.
 
-Now we have 3 different experiments, but they all top at 10 epochs.
+Now we have 3 different runs, but they all top at 10 epochs.
 Let's try to run the same model for 20 epochs, to make sure it's not too short
 
+Okay now I run it with both 18 and 50 to make sure. 
+I've collected the results and 50 was best. 
 
 Experiment 1: Try to do cyclic learning rate
 Experiment 2: Data augmentation

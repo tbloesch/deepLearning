@@ -26,7 +26,15 @@ def download_data(data_dir=DATA_DIR, file_id=DATA_FILE_ID):
     return data_dir
 
 
-def get_transform():
+def get_transform(augment=False):
+    if augment:
+        return transforms.Compose([
+            transforms.RandomResizedCrop(IMAGE_SIZE, scale=(0.7, 1.0)),
+            #transforms.RandomHorizontalFlip(),
+            #transforms.ColorJitter(brightness=0.2, contrast=0.2),
+            transforms.ToTensor(),
+            transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD),
+        ])
     return transforms.Compose([
         transforms.Resize(IMAGE_SIZE),
         transforms.ToTensor(),
@@ -34,12 +42,14 @@ def get_transform():
     ])
 
 
-def get_datasets(data_dir=DATA_DIR, transform=None):
+def get_datasets(data_dir=DATA_DIR, train_transform=None, val_transform=None):
     """Return (train_dataset, val_dataset) as ImageFolder datasets."""
     data_dir = Path(data_dir)
-    transform = transform or get_transform()
-    train_dataset = datasets.ImageFolder(data_dir / 'train', transform=transform)
-    val_dataset   = datasets.ImageFolder(data_dir / 'val',   transform=transform)
+    train_transform = train_transform or get_transform()
+    val_transform = val_transform or get_transform()
+    train_dataset = datasets.ImageFolder(data_dir / 'train', transform=train_transform)
+    val_dataset   = datasets.ImageFolder(data_dir / 'val',   transform=val_transform)
+    return train_dataset, val_dataset
     return train_dataset, val_dataset
 
 
