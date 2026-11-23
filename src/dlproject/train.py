@@ -16,8 +16,14 @@ def evaluate(model, loader, loss_fn, device):
             total += images.size(0)
     return total_loss / total, correct / total
 
-def train(model, train_loader, val_loader, device, epochs=10, lr=1e-3, checkpoint_path=None):
-    optimizer = optim.Adam(model.parameters(), lr=lr)
+def train(model, train_loader, val_loader, device, epochs=10, lr=1e-3, backbone_lr=None, checkpoint_path=None):
+    if backbone_lr is None:
+        optimizer = optim.Adam(model.parameters(), lr=lr)
+    else:
+        optimizer = optim.Adam([
+            {"params": model.layer4.parameters(), "lr": backbone_lr},
+            {"params": [p for n, p in model.named_parameters() if "layer4" not in n], "lr": lr}
+        ])
     loss_fn = nn.CrossEntropyLoss()
     history = {"train_loss": [], "train_acc": [], "val_loss": [], "val_acc": []}
     best_val_loss = float('inf')

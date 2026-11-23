@@ -1,0 +1,93 @@
+\subsection*{Exp 2 -- Data augmentation (ResNet-50, frozen backbone)}
+\textbf{Setup:} arch = resnet50, frozen backbone (only \texttt{fc} trains, 14{,}343 parameters),
+20 epochs, Adam lr = $10^{-3}$, batch size 32, seeds 0/1/2. Augmentation on the training set only
+(val unchanged). Best epoch selected by validation loss.\\
+\textbf{Configurations:}
+none;
+flip = \texttt{RandomHorizontalFlip};
+crop = \texttt{RandomResizedCrop(224, scale=(0.7, 1.0))} instead of \texttt{Resize};
+jitter = \texttt{ColorJitter(brightness=0.2, contrast=0.2)} (no hue/saturation: coat colour is a breed feature);
+all = flip + crop + jitter.\\
+\textbf{Checkpoints:} \texttt{resnet50\_frozen\_\{aug\}\_seed\{0,1,2\}.pt},
+histories \texttt{resnet50\_frozen\_\{aug\}\_histories.json} (Drive + \texttt{results/}).
+
+\begin{center}
+\begin{tabular}{llccc}
+    \toprule
+    Augmentation & Seed & Best epoch & Val loss & Val acc. (\%) \\
+    \midrule
+    None   & 0 & 20 & 0.3552 & 88.81 \\
+           & 1 & 19 & 0.3554 & 88.06 \\
+           & 2 & 20 & 0.3618 & 89.55 \\
+    \midrule
+    Flip   & 0 & 19 & 0.3545 & 88.81 \\
+           & 1 & 19 & 0.3577 & 87.31 \\
+           & 2 & 20 & 0.3610 & 88.81 \\
+    \midrule
+    Crop   & 0 & 19 & 0.3603 & 88.81 \\
+           & 1 & 19 & 0.3554 & 89.55 \\
+           & 2 & 18 & 0.3742 & 88.81 \\
+    \midrule
+    Jitter & 0 & 20 & 0.3511 & 88.06 \\
+           & 1 & 19 & 0.3492 & 87.31 \\
+           & 2 & 20 & 0.3586 & 88.06 \\
+    \midrule
+    All    & 0 & 18 & 0.3680 & 89.55 \\
+           & 1 & 19 & 0.3644 & 87.31 \\
+           & 2 & 20 & 0.3680 & 88.81 \\
+    \bottomrule
+\end{tabular}
+
+\vspace{0.5em}
+\begin{tabular}{lccc}
+    \toprule
+    Augmentation & Train acc. (\%) & Val loss & Val acc. (\%) \\
+    \midrule
+    None   & $99.68 \pm 0.08$ & $0.3575 \pm 0.0038$ & $88.81 \pm 0.75$ \\
+    Flip   & $99.57 \pm 0.19$ & $0.3577 \pm 0.0033$ & $88.31 \pm 0.86$ \\
+    Crop   & $98.71 \pm 0.37$ & $0.3633 \pm 0.0098$ & $89.05 \pm 0.43$ \\
+    Jitter & $99.70 \pm 0.17$ & $0.3530 \pm 0.0050$ & $87.81 \pm 0.43$ \\
+    All    & $98.41 \pm 0.20$ & $0.3668 \pm 0.0021$ & $88.56 \pm 1.14$ \\
+    \bottomrule
+\end{tabular}
+
+{\small Mean $\pm$ sample standard deviation ($\mathrm{ddof}=1$) over three seeds.}
+\end{center}
+
+\textbf{Observations:}
+\begin{itemize}
+    \item No augmentation improves validation loss or accuracy beyond seed-to-seed variation
+          (val = 134 images, so one image = 0.75 pp).
+    \item Crop and all lower the training accuracy (less memorisation), but this does not
+          carry over to validation. All has a slightly higher val loss than none (about 2.5 std).
+    \item Crop and all converge more slowly (val loss slightly higher from epoch 3 to 15 in the
+          comparison plot); with a fixed 20 epochs they may be disadvantaged $\rightarrow$ limitation.
+    \item Likely reason: the ImageNet V2 weights were trained with flip/crop/photometric augmentation,
+          so the frozen features are already largely invariant; only the linear head can adapt.
+          \emph{TODO: cite the torchvision IMAGENET1K\_V2 training recipe.}
+\end{itemize}
+\textbf{Decision:} pairs of augmentations skipped (all behaves like crop plus a little more).
+Test whether augmentation matters once the features can change $\rightarrow$ Exp 3.
+
+\subsection*{Reproducibility check}
+\textbf{Setup:} Exp 1b (ResNet-50, frozen, no augmentation, seeds 0/1/2) trained a second time to
+get its histories for the comparison plot.\\
+\textbf{Result:} identical to Exp 1b to four decimals for every seed
+(best epochs 20/19/20; val loss $0.3575 \pm 0.0038$; val acc $88.81 \pm 0.75$\%).\\
+\textbf{Decision:} seeding works; GPU non-determinism did not occur. Mention in Methods.
+
+\subsection*{Exp 3 -- Fine-tuning \texttt{layer4} (in preparation)}
+\textbf{Design:} $2 \times 2$: \{frozen, \texttt{layer4} unfrozen\} $\times$ \{none, all\}, ResNet-50,
+20 epochs, seeds 0/1/2, fresh model for every configuration.\\
+\textbf{Code changes:}
+\begin{itemize}
+    \item \texttt{build\_model(..., unfreeze\_layer4=False)}: freezes everything, then sets
+          \texttt{requires\_grad=True} for \texttt{layer4}.
+          Trainable parameters: frozen 14{,}343 / 23{,}522{,}375 (0.06\%);
+          \texttt{layer4} unfrozen 14{,}979{,}079 (63.7\%).
+    \item TODO: Adam parameter groups in \texttt{train.py}, lower lr for \texttt{layer4}
+          (e.g.\ $10^{-4}$) than for \texttt{fc} ($10^{-3}$).
+    \item Notebook: one settings cell; \texttt{RUN\_NAME} in all file names
+          (\texttt{resnet50\_layer4\_\{aug\}} vs.\ \texttt{resnet50\_frozen\_\{aug\}}), so nothing is overwritten.
+\end{itemize}
+\textbf{Prediction} (write before running!): \ldots
