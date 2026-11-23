@@ -1,0 +1,79 @@
+% ── Report snippets for Experiment 3 (needs \usepackage{booktabs, graphicx}) ──
+% Upload to Overleaf's figures/ folder (from MyDrive/deepLearning/checkpoints/):
+%   resnet50_exp3_2x2.pdf            (new 2x2 cell)
+%   resnet50_layer4_none_curves.pdf  (cell 21, run with UNFREEZE_LAYER4 = True, AUG = "none")
+
+% ───────────────────────── Results: table ─────────────────────────
+\begin{table}[ht]
+    \centering
+    \caption{Experiment 3: fine-tuning \texttt{layer4} combined with data augmentation
+             (ResNet-50, 20 epochs). Validation loss / validation accuracy at the epoch with the
+             lowest validation loss; mean $\pm$ sample standard deviation over three seeds.
+             The frozen row is taken from Experiment~2.}
+    \label{tab:exp3}
+    \begin{tabular}{lcc}
+        \toprule
+        Backbone & No augmentation & All augmentations \\
+        \midrule
+        Frozen                 & $0.3575 \pm 0.0038$ / $88.81 \pm 0.75$\,\% & $0.3668 \pm 0.0021$ / $88.56 \pm 1.14$\,\% \\
+        \texttt{layer4} unfrozen & $0.2324 \pm 0.0239$ / $93.03 \pm 1.14$\,\% & $0.2161 \pm 0.0576$ / $93.03 \pm 1.14$\,\% \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% ───────────────────────── Results: main figure ─────────────────────────
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\linewidth]{figures/resnet50_exp3_2x2.pdf}
+    \caption{Experiment 3: training (dashed) and validation (solid) loss for the four combinations of
+             backbone (frozen / \texttt{layer4} unfrozen) and augmentation (none / all).
+             Lines show the mean and shaded bands the sample standard deviation of the validation
+             loss over three seeds. Unfreezing \texttt{layer4} lowers the validation loss substantially,
+             while augmentation raises the training loss without changing the validation loss.}
+    \label{fig:exp3}
+\end{figure}
+
+% ───────────────────────── Results/Discussion: learning curves ─────────────────────────
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\linewidth]{figures/resnet50_layer4_none_curves.pdf}
+    \caption{Learning curves for ResNet-50 with \texttt{layer4} unfrozen and no augmentation:
+             mean $\pm$ sample standard deviation over three seeds. Dots mark each seed's selected
+             epoch (lowest validation loss). The training set is memorised within three epochs, after
+             which the validation loss plateaus and slowly increases. The selected epochs lie below the
+             mean curve, so the validation performance at the selected epoch is optimistically biased.}
+    \label{fig:exp3-curves}
+\end{figure}
+
+% ───────────────────────── Draft text for Results (rewrite in your own words) ─────────────────────────
+% Unfreezing layer4 was the only change that clearly improved performance
+% (Table~\ref{tab:exp3}, Figure~\ref{fig:exp3}): validation loss decreased by 35\% and validation
+% accuracy increased by 4.2 percentage points, with no overlap between the seed ranges.
+% Augmentation had no measurable effect in either setting. To limit the influence of selecting a
+% single noisy epoch, we also compared the mean validation loss over epochs 5--20, which was likewise
+% equal ($0.289 \pm 0.034$ without and $0.286 \pm 0.063$ with augmentation).
+% With layer4 unfrozen, the model memorised the training set within 3--4 epochs, the validation
+% curves became considerably noisier, and the selected epoch varied between seeds (3, 19 and 8)
+% (Figure~\ref{fig:exp3-curves}). This contradicts our hypothesis from Experiment~2 that augmentation
+% was ineffective only because the backbone was frozen.
+
+% ───────────────────────── Appendix: per-seed table ─────────────────────────
+\begin{table}[ht]
+    \centering
+    \caption{Per-seed results for Experiment 3 (\texttt{layer4} unfrozen), at the epoch with the
+             lowest validation loss.}
+    \label{tab:exp3-seeds}
+    \begin{tabular}{llcccc}
+        \toprule
+        Augmentation & Seed & Best epoch & Train acc.\ (\%) & Val loss & Val acc.\ (\%) \\
+        \midrule
+        None & 0 & 3  & 99.92  & 0.2481 & 91.79 \\
+             & 1 & 19 & 100.00 & 0.2442 & 93.28 \\
+             & 2 & 8  & 99.76  & 0.2049 & 94.03 \\
+        \midrule
+        All  & 0 & 13 & 99.84  & 0.2068 & 93.28 \\
+             & 1 & 7  & 99.44  & 0.2778 & 91.79 \\
+             & 2 & 8  & 99.60  & 0.1637 & 94.03 \\
+        \bottomrule
+    \end{tabular}
+\end{table}

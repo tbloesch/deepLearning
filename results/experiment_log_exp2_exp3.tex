@@ -76,7 +76,7 @@ get its histories for the comparison plot.\\
 (best epochs 20/19/20; val loss $0.3575 \pm 0.0038$; val acc $88.81 \pm 0.75$\%).\\
 \textbf{Decision:} seeding works; GPU non-determinism did not occur. Mention in Methods.
 
-\subsection*{Exp 3 -- Fine-tuning \texttt{layer4} (in preparation)}
+\subsection*{Exp 3 -- Fine-tuning \texttt{layer4}}
 \textbf{Design:} $2 \times 2$: \{frozen, \texttt{layer4} unfrozen\} $\times$ \{none, all\}, ResNet-50,
 20 epochs, seeds 0/1/2, fresh model for every configuration.\\
 \textbf{Code changes:}
@@ -85,9 +85,54 @@ get its histories for the comparison plot.\\
           \texttt{requires\_grad=True} for \texttt{layer4}.
           Trainable parameters: frozen 14{,}343 / 23{,}522{,}375 (0.06\%);
           \texttt{layer4} unfrozen 14{,}979{,}079 (63.7\%).
-    \item TODO: Adam parameter groups in \texttt{train.py}, lower lr for \texttt{layer4}
-          (e.g.\ $10^{-4}$) than for \texttt{fc} ($10^{-3}$).
+    \item \texttt{train(..., backbone\_lr=None)}: Adam parameter groups, \texttt{layer4} with
+          lr $= 10^{-4}$, everything else (\texttt{fc}) with lr $= 10^{-3}$. \texttt{None} = one group as before.
     \item Notebook: one settings cell; \texttt{RUN\_NAME} in all file names
           (\texttt{resnet50\_layer4\_\{aug\}} vs.\ \texttt{resnet50\_frozen\_\{aug\}}), so nothing is overwritten.
 \end{itemize}
 \textbf{Prediction} (write before running!): \ldots
+
+\textbf{Checkpoints:} \texttt{resnet50\_layer4\_\{none,all\}\_seed\{0,1,2\}.pt},
+histories \texttt{resnet50\_layer4\_\{none,all\}\_histories.json}. Load check (all, seed 2): 0.1637 / 94.03\% \checkmark
+
+\begin{center}
+\begin{tabular}{llcccc}
+    \toprule
+    Configuration & Seed & Best epoch & Train acc. (\%) & Val loss & Val acc. (\%) \\
+    \midrule
+    \texttt{layer4}, none & 0 & 3  & 99.92  & 0.2481 & 91.79 \\
+                          & 1 & 19 & 100.00 & 0.2442 & 93.28 \\
+                          & 2 & 8  & 99.76  & 0.2049 & 94.03 \\
+                          & mean $\pm$ std & -- & $99.89 \pm 0.12$ & $0.2324 \pm 0.0239$ & $93.03 \pm 1.14$ \\
+    \midrule
+    \texttt{layer4}, all  & 0 & 13 & 99.84  & 0.2068 & 93.28 \\
+                          & 1 & 7  & 99.44  & 0.2778 & 91.79 \\
+                          & 2 & 8  & 99.60  & 0.1637 & 94.03 \\
+                          & mean $\pm$ std & -- & $99.62 \pm 0.20$ & $0.2161 \pm 0.0576$ & $93.03 \pm 1.14$ \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Observations:}
+\begin{itemize}
+    \item Unfreezing \texttt{layer4} is a large effect: val loss $0.3575 \rightarrow 0.2324$ ($-35\%$),
+          val acc $88.81 \rightarrow 93.03\%$ (+4.2 pp, about 6 images). Val acc ranges do not overlap
+          (frozen 88.1--89.6\%, \texttt{layer4} 91.8--94.0\%).
+    \item Memorisation within 3--4 epochs (train loss $\approx 0$, train acc 100\%). Val loss plateaus after
+          epoch 3 and drifts up slowly; seed 2 (none) and seed 1 (all) show clear overfitting (U-shape).
+    \item Much noisier: val loss std $0.0038 \rightarrow 0.0239$ (none) / $0.0576$ (all), best epochs vary
+          (3/19/8 and 13/7/8). Best-epoch values lie below the mean curve $\rightarrow$ selection bias,
+          the reported val numbers are optimistic. Test set gives the unbiased estimate.
+    \item Val loss and val acc disagree after epoch 3 (loss flat/rising, acc slightly rising): the model becomes
+          overconfident on its remaining errors. Kept val loss as the pre-defined criterion.
+    \item Augmentation does not help with \texttt{layer4} unfrozen either: val loss $0.2324$ vs.\ $0.2161$
+          (difference $\ll$ std), val acc identical. Mean val loss over epochs 5--20 (less affected by
+          selection): none $0.289 \pm 0.034$, all $0.286 \pm 0.063$. Augmentation keeps train loss higher
+          (epoch 20: 0.0005 vs.\ 0.0144) but this does not carry over to validation.
+    \item 2$\times$2 conclusion: large main effect of unfreezing, no effect of augmentation in either row,
+          no interaction. The Exp 2 hypothesis (augmentation only failed because the backbone was frozen)
+          is \emph{not} supported.
+\end{itemize}
+\textbf{Decision:} final configuration = ResNet-50 with \texttt{layer4} unfrozen.
+Between none and all: \ldots\ (choose rule \& write it here before looking at the test set).
+Evaluate all three seed checkpoints of that configuration on the test set (mean $\pm$ std).
