@@ -35,10 +35,10 @@ Let's try to run the same model for 20 epochs, to make sure it's not too short
 Okay now I run it with both 18 and 50 to make sure. 
 I've collected the results and 50 was best. 
 
-Experiment 1: Try to do cyclic learning rate
-Experiment 2: Data augmentation
+Now I implemented some data augmentation. I want to test different ones singular first, and then compare them at the end.
 
-Received the first graphs of training val and train val. Starts overfitting after epoch 8 ish. 
+I start with crop - but it made almost no difference. Maybe because my backbone is frozen, since that results in my features not being able to change. Only the last linear layer changes. 
+I'm gonna run the flip and jitter as well, just to make sure. 
 
 
 
