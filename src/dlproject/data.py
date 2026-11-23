@@ -64,6 +64,12 @@ def get_loader(dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WOR
         pin_memory=torch.cuda.is_available(),
     )
 
+def get_test_dataset(data_dir=DATA_DIR, test_transform=None):
+    """Return the test dataset as an ImageFolder dataset."""
+    data_dir = Path(data_dir)
+    test_transform = test_transform or get_transform()
+    test_dataset = datasets.ImageFolder(data_dir / 'test', transform=test_transform)
+    return test_dataset
 
 def describe_dataset(dataset):
     """Print classes, size and the shape of the first item."""
